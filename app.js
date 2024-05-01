@@ -20,6 +20,12 @@ const limiter = rateLimit({
 	standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
 	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
+const corsOptions = {
+	origin: process.env.CORS_ORIGIN,
+	methods: ["GET", "POST", "PUT", "DELETE"],
+	allowedHeaders: ["Content-Type", "Authorization"],
+	credentials: true,
+};
 
 // * METHODS
 const sanitize = (req, res, next) => {
@@ -46,7 +52,8 @@ const sanitize = (req, res, next) => {
 app.use(cp(process.env.CP_SECRET));
 app.use(express.json());
 app.use(helmet());
-app.use(cors());
+app.options("*", cors(corsOptions));
+app.use(cors(corsOptions));
 app.use(limiter);
 app.use(sanitize);
 

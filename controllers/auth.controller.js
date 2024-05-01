@@ -19,12 +19,12 @@ const registerUser = async (req, res) => {
 		return res.status(400).json({ message: "Invalid username or email" });
 	}
 
-	const verificationToken = crypto.randomBytes(2 ** 8).toString("hex"); // Generate a verification token
-
 	// If the email, password, or username is missing, send a 400 response
 	if (!email || !password) {
 		return res.status(400).json({ message: "Invalid Fields" });
 	}
+
+	const verificationToken = crypto.randomBytes(2 ** 8).toString("hex"); // Generate a verification token
 
 	// Create a new user
 	const user = await User.create({
@@ -38,10 +38,9 @@ const registerUser = async (req, res) => {
 
 	// Send a verification email
 	await sendVerificationEmail({
-		//destinationEmail: user.email,
-		destinationEmail: process.env.NODEMAILER_USER, //TODO: change this to your email
+		email: user.email,
 		verificationToken: user.verificationToken,
-		url: frontendUrlString,
+		frontendUrl: frontendUrlString,
 	});
 
 	return res.status(200).json({ data: { user } }); // Send a 200 response with the user
@@ -204,7 +203,7 @@ const resetPass = async (req, res) => {
 
 // CONTROLLER: Verify Email
 const verifyEmail = async (req, res) => {
-	const { verificationToken, email } = req.params; // Destructure the verification token and email from the request params
+	const { verificationToken, email } = req.body; // Destructure the verification token and email from the request params
 
 	const user = await User.findOne({ email }); // Find the user by email
 
