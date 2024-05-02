@@ -1,19 +1,16 @@
 // * IMPORTS
+const { authenticateUser } = require("../middleware/auth.middleware.js");
 const {
 	getAllDevices,
 	addDevice,
-	updateDevice,
-	deleteDevice,
 } = require("../controllers/devices.controller.js");
 
 // * ROUTER
 const router = require("express").Router();
 
 // * ROUTES
-router.get("/", getAllDevices);
-router.post("/add", addDevice);
-router.put("/update/:id", updateDevice);
-router.delete("/delete/:id", deleteDevice);
+router.get("/", authenticateUser, getAllDevices);
+router.post("/add", authenticateUser, addDevice);
 
 // * EXPORTS
 module.exports = router;

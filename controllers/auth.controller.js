@@ -11,17 +11,17 @@ const { attachCookies } = require("../lib/auth/jwt.js");
 // * CONTROLLERS
 // CONTROLLER: Register User
 const registerUser = async (req, res) => {
-	const { email, password } = req.body; // Destructure the email, password, and username from the request body
+	const { email, password } = req.body; // Destructure the email, password from the request body
 	const emailAlreadyExists = await User.findOne({ email }); // Check if the email is already taken
 
 	// If the email is already taken, send a 400 response
 	if (emailAlreadyExists) {
-		return res.status(400).json({ message: "Invalid username or email" });
+		return res.status(400).json({ message: "Invalid email" });
 	}
 
-	// If the email, password, or username is missing, send a 400 response
+	// If the email or password is missing, send a 400 response
 	if (!email || !password) {
-		return res.status(400).json({ message: "Invalid Fields" });
+		return res.status(400).json({ message: "Invalid fields" });
 	}
 
 	const verificationToken = crypto.randomBytes(2 ** 8).toString("hex"); // Generate a verification token
@@ -50,23 +50,23 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
 	const { email, password } = req.body; // Destructure the email and password from the request body
 
-	// If the email or password is missing, send a 400 response
+	// If the email or password is missing, send a 401 response
 	if (!email || !password) {
-		return res.status(400).json({ message: "Email or password not valid" });
+		return res.status(401).json({ message: "Email or password not valid" });
 	}
 
 	const user = await User.findOne({ email }); // Find the user by email
 
-	// If the user doesn't exist, send a 400 response
+	// If the user doesn't exist, send a 401 response
 	if (!user) {
-		return res.status(400).json({ message: "Email or password not valid" });
+		return res.status(401).json({ message: "Email or password not valid" });
 	}
 
 	const isPassCorrect = await user.comparePass(password); // Compare the password with the hashed password
 
 	// If the password is incorrect, send a 401 response
 	if (!isPassCorrect) {
-		return res.status(401).json({ message: "Invalid username or password" });
+		return res.status(401).json({ message: "Email or password not valid" });
 	}
 
 	// If the user isn't verified, send a 401 response
@@ -74,7 +74,7 @@ const loginUser = async (req, res) => {
 		return res.status(401).json({ message: "Email not verified" });
 	}
 
-	const tokenUser = { name: user.username, userId: user._id, role: user.role }; // Create a token user
+	const tokenUser = { userId: user._id, role: user.role }; // Create a token user
 	let refreshToken = ""; // Create a refresh token
 
 	const existingToken = await Token.findOne({ user: user._id }); // Find an existing token
@@ -142,19 +142,18 @@ const forgotPass = async (req, res) => {
 		const passwordToken = crypto.randomBytes(70).toString("hex"); // Generate a password token
 		// Send a reset password email
 		await sendResetPasswordEmail({
-			username: user.username,
 			email: user.email,
 			passwordToken: passwordToken,
-			url: frontendUrlString,
+			frontendUrl: frontendUrlString,
 		});
 
 		const tenMinutes = 1000 * 60 * 10; // Set the expiration date to 10 minutes
 		const passwordTokenExpirationDate = new Date(Date.now() + tenMinutes); // Set the expiration date
 
-		user.passwordToken = passwordToken; // Set the password token
-		user.passwordTokenExpirationDate = passwordTokenExpirationDate; // Set the expiration date
-
+		user.passwordResetToken = passwordToken; // Set the password token
+		user.passwordResetExpiration = passwordTokenExpirationDate; // Set the expiration date
 		await user.save(); // Save the user
+
 		//TODO Remove password token from res
 		return res.status(200).json({
 			message: "Check your email for reset link",
@@ -165,11 +164,10 @@ const forgotPass = async (req, res) => {
 
 // CONTROLLER: Reset Password
 const resetPass = async (req, res) => {
-	const { password } = req.body; // Destructure the token, email, and password from the request body
-	const { token, email } = req.params;
+	const { passwordToken, password, email } = req.body; // Destructure the token, email, and password from the request body
 
 	// If the token, email, or password is missing, send a 400 response
-	if (!token || !email || !password) {
+	if (!passwordToken || !email || !password) {
 		return res
 			.status(400)
 			.json({ message: "Invalid token, email, or password" });
@@ -177,18 +175,22 @@ const resetPass = async (req, res) => {
 
 	const user = await User.findOne({ email }); // Find the user by email
 
+	if (user.passwordResetToken !== passwordToken) {
+		return res.status(400).json({ message: "Invalid token" });
+	}
+
 	// If the user doesn't exist, send a 400 response
-	if (user && user.passwordToken && user.passwordTokenExpirationDate) {
+	if (user && user.passwordResetToken && user.passwordResetExpiration) {
 		const currentDate = new Date(); // Get the current date
 
 		// If the password token and expiration date are valid, reset the password
 		if (
-			user.passwordToken === token &&
-			user.passwordTokenExpirationDate > currentDate
+			user.passwordResetToken === passwordToken &&
+			user.passwordResetExpiration > currentDate
 		) {
 			user.password = password; // Set the password
-			user.passwordToken = null; // Set the password token to null
-			user.passwordTokenExpirationDate = null; // Set the expiration date to null
+			user.passwordResetToken = null; // Set the password token to null
+			user.passwordResetExpiration = null; // Set the expiration date to null
 
 			await user.save(); // Save the user
 
@@ -241,7 +243,7 @@ const resendVerification = async (req, res) => {
 
 	// Send a verification email to the user
 	await sendVerificationEmail({
-		// Pass the user's username, email, verification token, and server URL to the email sending function
+		// Pass the user's email, verification token, and server URL to the email sending function
 		email: user.email,
 		verificationToken: user.verificationToken,
 		url: frontendUrlString,

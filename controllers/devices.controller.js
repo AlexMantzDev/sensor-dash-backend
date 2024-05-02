@@ -4,30 +4,21 @@ const Device = require("../models/Device.model.js");
 // * METHODS
 // GET all devices
 const getAllDevices = async (req, res) => {
-	const devices = await Device.find({});
+	const { userId } = req.user;
+	const devices = await Device.find({ ownerId: userId });
 	res.status(200).json(devices);
 };
 // POST add device
 const addDevice = async (req, res) => {
-	try {
-		const { ownerId } = req.body;
-		const device = new Device({ ownerId });
-		await device.save();
-		console.log(device);
-		res.status(201).json(device);
-	} catch (error) {
-		console.log(error);
-	}
+	const { userId: ownerId } = req.user;
+	const device = new Device({ ownerId });
+	await device.save();
+	console.log(device);
+	res.status(201).json({ data: { device } });
 };
-// PUT update device
-const updateDevice = async () => {};
-// DELETE delete device
-const deleteDevice = async () => {};
 
 // * EXPORTS
 module.exports = {
 	getAllDevices,
 	addDevice,
-	updateDevice,
-	deleteDevice,
 };
