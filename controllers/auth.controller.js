@@ -74,7 +74,7 @@ const loginUser = async (req, res) => {
 		return res.status(401).json({ message: "Email not verified" });
 	}
 
-	const tokenUser = { userId: user._id, role: user.role }; // Create a token user
+	const tokenUser = { userId: user._id, email }; // Create a token user
 	let refreshToken = ""; // Create a refresh token
 
 	const existingToken = await Token.findOne({ user: user._id }); // Find an existing token
@@ -203,6 +203,36 @@ const resetPass = async (req, res) => {
 	}
 };
 
+const changePass = async (req, res) => {
+	const { email, oldPassword, newPassword } = req.body; // Destructure the email, old password, and new password from the request body
+
+	// If the email, old password, or new password is missing, send a 400 response
+	if (!email || !oldPassword || !newPassword) {
+		return res
+			.status(400)
+			.json({ message: "Invalid email, old password, or new password" });
+	}
+
+	const user = await User.findOne({ email }); // Find the user by email
+
+	// If the user doesn't exist, send a 400 response
+	if (!user) {
+		return res.status(400).json({ message: "Invalid email" });
+	}
+
+	const isPassCorrect = await user.comparePass(oldPassword); // Compare the old password with the hashed password
+
+	// If the old password is incorrect, send a 400 response
+	if (!isPassCorrect) {
+		return res.status(400).json({ message: "Invalid old password" });
+	}
+
+	user.password = newPassword; // Set the password to the new password
+	await user.save(); // Save the user
+
+	return res.status(200).json({ message: "Success: Password changed" }); // Send a 200 response
+};
+
 // CONTROLLER: Verify Email
 const verifyEmail = async (req, res) => {
 	const { verificationToken, email } = req.body; // Destructure the verification token and email from the request params
@@ -310,6 +340,7 @@ module.exports = {
 	logoutUser,
 	forgotPass,
 	resetPass,
+	changePass,
 	verifyEmail,
 	resendVerification,
 	me,
