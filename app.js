@@ -58,9 +58,9 @@ app.use(limiter);
 app.use(sanitize);
 
 // * ROUTES
-app.use("/api/v1/sensor-data", require("./routes/sensor-data.routes"));
-app.use("/api/v1/devices", require("./routes/devices.routes"));
-app.use("/api/v1/auth", require("./routes/auth.routes"));
+app.use("/sensor-dash/v1/sensor-data", require("./routes/sensor-data.routes"));
+app.use("/sensor-dash/v1/devices", require("./routes/devices.routes"));
+app.use("/sensor-dash/v1/auth", require("./routes/auth.routes"));
 // app.get("*", (req, res) => {
 // 	res.sendFile(`index.html`, { root: www });
 // });
