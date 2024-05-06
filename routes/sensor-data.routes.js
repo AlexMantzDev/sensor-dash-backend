@@ -1,6 +1,7 @@
 // * IMPORTS
 const {
 	getData,
+	getAllData,
 	sendData,
 	deleteData,
 } = require("../controllers/sensor-data.controller.js");
@@ -9,9 +10,10 @@ const {
 const router = require("express").Router();
 
 // * ROUTES
-router.get("/", getData);
+router.get("/", getAllData);
+router.get("/:id", getData);
 router.post("/add", sendData);
-router.delete("/delete/:id", deleteData);
+router.delete("/:id", deleteData);
 
 // * EXPORTS
 module.exports = router;

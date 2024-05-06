@@ -33,8 +33,7 @@ const registerUser = async (req, res) => {
 		verificationToken,
 	});
 
-	let frontendUrlString = "http://localhost:4200";
-	// TODO: Set this to the server URL depending on the environment
+	let frontendUrlString = process.env.FRONTEND_URL;
 
 	// Send a verification email
 	await sendVerificationEmail({
@@ -135,7 +134,7 @@ const forgotPass = async (req, res) => {
 
 	const user = await User.findOne({ email }); // Find the user by email
 
-	let frontendUrlString = "http://localhost:4200"; // TODO: Set this to the server URL depending on the environment
+	let frontendUrlString = process.env.FRONTEND_URL;
 
 	// If the user exists, send a reset password email
 	if (user) {
@@ -154,10 +153,8 @@ const forgotPass = async (req, res) => {
 		user.passwordResetExpiration = passwordTokenExpirationDate; // Set the expiration date
 		await user.save(); // Save the user
 
-		//TODO Remove password token from res
 		return res.status(200).json({
 			message: "Check your email for reset link",
-			passwordToken,
 		}); // Send a 200 response
 	}
 };
@@ -269,7 +266,7 @@ const resendVerification = async (req, res) => {
 	});
 
 	// Define a variable to hold the server URL string
-	let frontendUrlString = "http://localhost:4200"; //TODO Same as on register user
+	let frontendUrlString = process.env.FRONTEND_URL;
 
 	// Send a verification email to the user
 	await sendVerificationEmail({
