@@ -61,13 +61,9 @@ app.use(sanitize);
 app.use("/sensor-dash/v1/sensor-data", require("./routes/sensor-data.routes"));
 app.use("/sensor-dash/v1/devices", require("./routes/devices.routes"));
 app.use("/sensor-dash/v1/auth", require("./routes/auth.routes"));
-// app.get("*", (req, res) => {
-// 	res.sendFile(`index.html`, { root: www });
-// });
 
 // * START
 (async function startServer() {
 	await connectToMongo(process.env.MONGO_URI);
 	app.listen(port, () => console.log(`listening on http://localhost:${port}`));
-	// console.log(`serving ${www}`);
 })();
