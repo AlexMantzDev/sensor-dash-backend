@@ -3,8 +3,10 @@ const { Schema, model, Types } = require("mongoose");
 
 // * SCHEMA
 const DeviceSchema = new Schema({
-	fakeId: {
+	serialNo: {
 		type: String,
+		required: true,
+		unique: true,
 	},
 	ownerId: {
 		require: true,

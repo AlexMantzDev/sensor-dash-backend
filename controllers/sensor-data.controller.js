@@ -31,8 +31,8 @@ const getAllData = async (req, res) => {
 	if (!devices || devices.length === 0) {
 		return res.status(404).json({ message: "Devices not found" });
 	}
-	const deviceIds = devices.map((device) => device._id.toString());
-	const data = await SensorData.find({ device: { $in: deviceIds } });
+	const deviceSerialNos = devices.map((device) => device.serialNo);
+	const data = await SensorData.find({ device: { $in: deviceSerialNos } });
 	if (!data || data.length === 0) {
 		return res.status(404).json({ message: "Data not found" });
 	}
@@ -59,21 +59,26 @@ const deleteData = async (req, res) => {
 };
 
 const genDummyData = async (req, res) => {
-	const { deviceId: fakeId, numEntries } = req.body;
+	const { serialNo, numEntries } = req.body;
 	const { userId } = req.user;
 
-	if (!fakeId) {
-		return res.status(400).json({ message: "Device ID is required" });
+	if (!serialNo) {
+		return res
+			.status(400)
+			.json({ message: "Device serial number is required" });
+	}
+	if (!numEntries) {
+		return res.status(400).json({ message: "Number of entries is required" });
 	}
 
-	let device = await Device.findOne({ fakeId });
+	let device = await Device.findOne({ serialNo });
 	if (!device) {
-		device = await Device.create({ ownerId: userId, fakeId });
+		device = await Device.create({ ownerId: userId, serialNo });
 	}
 
 	let user = await User.findById(userId);
-	if (!user.devices.includes(device._id)) {
-		user.devices.push(device._id);
+	if (!user.devices.includes(device.serialNo)) {
+		user.devices.push(device.serialNo);
 		await user.save();
 	}
 
@@ -81,7 +86,7 @@ const genDummyData = async (req, res) => {
 	for (let i = 0; i < numEntries; i++) {
 		let date = new Date(Date.now()).setHours(i, 0, 0, 0);
 		data.push({
-			device: device._id,
+			device: device.serialNo,
 			data: {
 				temperature: Math.floor(Math.random() * 20) + 50,
 				humidity: Math.floor(Math.random() * 10) + 60,
@@ -90,7 +95,7 @@ const genDummyData = async (req, res) => {
 		});
 	}
 	await SensorData.insertMany(data);
-	res.status(201).json({ data: { device } });
+	res.status(201).json({ data });
 };
 
 // * EXPORTS

@@ -6,8 +6,7 @@ const SensorDataSchema = new Schema(
 	{
 		device: {
 			required: true,
-			type: Types.ObjectId,
-			ref: "Device",
+			type: String,
 		},
 		data: {
 			type: {

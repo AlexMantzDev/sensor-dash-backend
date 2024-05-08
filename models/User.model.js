@@ -22,8 +22,7 @@ const UserSchema = new Schema({
 		minLength: 8,
 	},
 	devices: {
-		type: [Types.ObjectId],
-		ref: "device",
+		type: [String],
 	},
 	isVerified: {
 		type: Boolean,

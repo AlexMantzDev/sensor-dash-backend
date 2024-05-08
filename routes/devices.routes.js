@@ -2,6 +2,7 @@
 const { authenticateUser } = require("../middleware/auth.middleware.js");
 const {
 	getAllDevices,
+	getDeviceBySerialNo,
 	addDevice,
 	updateDevice,
 	deleteDevice,
@@ -12,9 +13,10 @@ const router = require("express").Router();
 
 // * ROUTES
 router.get("/", authenticateUser, getAllDevices);
+router.get("/serial/:serialNo", authenticateUser, getDeviceBySerialNo);
 router.post("/add", authenticateUser, addDevice);
 router.patch("/:id", authenticateUser, updateDevice);
-router.delete("/:id", authenticateUser, deleteDevice);
+router.delete("/:serialNo", authenticateUser, deleteDevice);
 
 // * EXPORTS
 module.exports = router;
