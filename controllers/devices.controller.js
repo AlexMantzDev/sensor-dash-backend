@@ -20,6 +20,8 @@ const addDevice = async (req, res) => {
 	res.status(201).json({ data: { device } });
 };
 
+const updateDevice = async (req, res) => {};
+
 const deleteDevice = async (req, res) => {
 	const { id } = req.params;
 	const { userId } = req.user;
@@ -35,5 +37,6 @@ const deleteDevice = async (req, res) => {
 module.exports = {
 	getAllDevices,
 	addDevice,
+	updateDevice,
 	deleteDevice,
 };

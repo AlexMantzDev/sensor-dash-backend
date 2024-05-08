@@ -3,10 +3,12 @@ const { Schema, model, Types } = require("mongoose");
 
 // * SCHEMA
 const DeviceSchema = new Schema({
+	fakeId: {
+		type: String,
+	},
 	ownerId: {
 		require: true,
-		// type: Types.ObjectId,
-		type: String,
+		type: Types.ObjectId,
 		ref: "User",
 	},
 });
