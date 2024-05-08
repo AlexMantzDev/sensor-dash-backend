@@ -28,14 +28,11 @@ const getData = async (req, res) => {
 const getAllData = async (req, res) => {
 	const { userId } = req.user;
 	const devices = await Device.find({ ownerId: userId });
-	console.log("devices: ", devices);
 	if (!devices || devices.length === 0) {
 		return res.status(404).json({ message: "Devices not found" });
 	}
 	const deviceIds = devices.map((device) => device._id.toString());
-	console.log("deviceIds: ", deviceIds);
 	const data = await SensorData.find({ device: { $in: deviceIds } });
-	console.log("data: ", data);
 	if (!data || data.length === 0) {
 		return res.status(404).json({ message: "Data not found" });
 	}
@@ -75,8 +72,10 @@ const genDummyData = async (req, res) => {
 	}
 
 	let user = await User.findById(userId);
-	user.devices.push(device._id);
-	await user.save();
+	if (!user.devices.includes(device._id)) {
+		user.devices.push(device._id);
+		await user.save();
+	}
 
 	const data = [];
 	for (let i = 0; i < numEntries; i++) {
@@ -91,7 +90,7 @@ const genDummyData = async (req, res) => {
 		});
 	}
 	await SensorData.insertMany(data);
-	res.status(201).json({ message: "Data generated" });
+	res.status(201).json({ data: { device } });
 };
 
 // * EXPORTS

@@ -1,6 +1,7 @@
 // * IMPORTS
 const Device = require("../models/Device.model.js");
 const User = require("../models/User.model.js");
+const SensorData = require("../models/Sensor-data.model.js");
 
 // * METHODS
 // GET all devices
@@ -30,6 +31,7 @@ const deleteDevice = async (req, res) => {
 	}
 	await Device.findByIdAndDelete(id);
 	await User.findByIdAndUpdate(userId, { $pull: { devices: id } });
+	await SensorData.deleteMany({ device: id });
 	res.status(204).json({ message: "Device deleted" });
 };
 
