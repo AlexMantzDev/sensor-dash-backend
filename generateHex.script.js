@@ -1,8 +1,12 @@
 const crypto = require("crypto");
 
-function generateRandom2048BitHex() {
-	const randomBytes = crypto.randomBytes(256); // 256 bytes for 2048 bits
-	return randomBytes.toString("hex");
-}
+const generateSerial = (bits) => {
+	return crypto.randomBytes(bits).toString("hex");
+};
 
-console.log(generateRandom2048BitHex());
+const serial64 = generateSerial(64);
+const serial256 = generateSerial(256);
+
+console.log(`64 bit: ${serial64}`);
+
+console.log(`256 bit: ${serial256}`);
